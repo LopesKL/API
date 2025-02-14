@@ -20,6 +20,8 @@ namespace API.Domain.Mapper
             CreateMap<AtividadePaiDto, AtividadePai>();
             CreateMap<Comentario, ComentarioDto>();
             CreateMap<ComentarioDto, Comentario>();
+            CreateMap<Cliente, ClienteDto>();
+            CreateMap<ClienteDto, Cliente>();            
             CreateMap<Empresa, EmpresaDto>();
             CreateMap<EmpresaDto, Empresa>();
             CreateMap<Habilidade, HabilidadeDto>();

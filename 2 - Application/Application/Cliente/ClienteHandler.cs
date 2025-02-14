@@ -30,6 +30,7 @@ namespace Application.ClienteHandler {
 
         public async Task<ResponseAllDto<List<ClienteDto>>> GetAll(RequestAllClienteDto request) {
             var consultaBase = _uow.ClienteRepository.Find(x => !x.IsDeleted).AsQueryable();
+
             //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
