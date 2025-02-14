@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using INotification = API.Domain.Notifications.INotificationHandler;
 
 namespace API.WebApi.Controllers {
-    [Authorize(Roles = Roles.ROLE_ADMIN)]  // Restringe o acesso ao controller apenas para usuários com a role ADMIN
+   // [Authorize(Roles = Roles.ROLE_ADMIN)]  // Restringe o acesso ao controller apenas para usuários com a role ADMIN
     public class HabilidadeController(UserHandler userHandler, HabilidadeHandler handler, INotification notification) : BaseController(userHandler, notification) {
         // Endpoint para buscar todos os registros com base em um RequestAllDto via POST
         [HttpPost("/habilidade/getAll")]

@@ -30,7 +30,7 @@ namespace Application.EmpresaHandler {
 
         public async Task<ResponseAllDto<List<EmpresaDto>>> GetAll(RequestAllEmpresaDto request) {
             var consultaBase = _uow.EmpresaRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
@@ -65,7 +65,7 @@ namespace Application.EmpresaHandler {
 
                 if (insert) {
                     empresa.Created = DateTime.UtcNow;
-                    empresa.CreatedBy = new Guid(currentUser.Id);
+                    //empresa.CreatedBy = new Guid(currentUser.Id);
                     empresa.IsDeleted = false;
                     _uow.EmpresaRepository.Insert(empresa);
                 }

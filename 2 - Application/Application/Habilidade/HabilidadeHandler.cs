@@ -30,7 +30,7 @@ namespace Application.HabilidadeHandler {
 
         public async Task<ResponseAllDto<List<HabilidadeDto>>> GetAll(RequestAllHabilidadeDto request) {
             var consultaBase = _uow.HabilidadeRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
@@ -65,7 +65,7 @@ namespace Application.HabilidadeHandler {
 
                 if (insert) {
                     habilidade.Created = DateTime.UtcNow;
-                    habilidade.CreatedBy = new Guid(currentUser.Id);
+                    //habilidade.CreatedBy = new Guid(currentUser.Id);
                     habilidade.IsDeleted = false;
                     _uow.HabilidadeRepository.Insert(habilidade);
                 }

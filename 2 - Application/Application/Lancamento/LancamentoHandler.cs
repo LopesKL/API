@@ -76,7 +76,7 @@ namespace Application.LancamentoHandler {
 
                 if (insert) {
                     lancamento.Created = DateTime.UtcNow;
-                    lancamento.CreatedBy = new Guid(currentUser.Id);
+                    //lancamento.CreatedBy = new Guid(currentUser.Id);
                     lancamento.IsDeleted = false;
                     _uow.LancamentoRepository.Insert(lancamento);
                 }

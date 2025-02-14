@@ -30,7 +30,7 @@ namespace Application.TagHandler {
 
         public async Task<ResponseAllDto<List<TagDto>>> GetAll(RequestAllTagDto request) {
             var consultaBase = _uow.TagRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
@@ -65,7 +65,7 @@ namespace Application.TagHandler {
 
                 if (insert) {
                     tag.Created = DateTime.UtcNow;
-                    tag.CreatedBy = new Guid(currentUser.Id);
+                    //tag.CreatedBy = new Guid(currentUser.Id);
                     tag.IsDeleted = false;
                     _uow.TagRepository.Insert(tag);
                 }

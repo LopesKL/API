@@ -109,9 +109,10 @@ namespace Application.PropjetosHandler {
         //}
 
         //Modelo GPT
-        public async Task<ResponseAllDto<List<ProjetosDto>>> GetAll(RequestAllProjetosDto request) { //Criar validação para definir qual Role recebe os dados Financeiros
+        public async Task<ResponseAllDto<List<ProjetosDto>>> GetAll(RequestAllProjetosDto request) {
             var consultaBase = _uow.ProjetosRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
+
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
@@ -214,7 +215,7 @@ namespace Application.PropjetosHandler {
 
                 if (insert) {
                     projeto.Created = DateTime.UtcNow;
-                    projeto.CreatedBy = new Guid(currentUser.Id);
+                    //projeto.CreatedBy = new Guid(currentUser.Id);
                     projeto.IsDeleted = false;
                     _uow.ProjetosRepository.Insert(projeto);
                 }

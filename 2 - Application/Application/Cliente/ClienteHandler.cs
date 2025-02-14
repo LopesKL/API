@@ -30,7 +30,7 @@ namespace Application.ClienteHandler {
 
         public async Task<ResponseAllDto<List<ClienteDto>>> GetAll(RequestAllClienteDto request) {
             var consultaBase = _uow.ClienteRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
@@ -66,7 +66,7 @@ namespace Application.ClienteHandler {
 
                 if (insert) {
                     cliente.Created = DateTime.UtcNow;
-                    cliente.CreatedBy = new Guid(currentUser.Id);
+                    //cliente.CreatedBy = new Guid(currentUser.Id);
                     cliente.IsDeleted = false;
                     _uow.ClienteRepository.Insert(cliente);
                 }

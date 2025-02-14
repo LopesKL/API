@@ -110,7 +110,7 @@ namespace API.Infra.SqlServer.Context
             modelBuilder.Entity<AtividadeUsuario>().HasKey(afu => new { afu.IdUsuario, afu.IdAtividade });
             modelBuilder.Entity<AtividadeUsuario>().HasOne(uh => uh.Atividade).WithMany(h => h.AtividadeUsuario).HasForeignKey(uh => uh.IdAtividade).OnDelete(DeleteBehavior.Cascade);
 
-
+            modelBuilder.Entity<AtividadePai>().HasKey(x => x.IdAtividadePai);
             modelBuilder.Entity<AtividadePai>().HasOne(ap => ap.Projetos).WithMany(p => p.AtividadePai) .HasForeignKey(ap => ap.IdProjeto) .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Cliente>().HasKey(x => x.IdCliente);
