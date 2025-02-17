@@ -124,8 +124,8 @@ namespace Application.AtividadeFilhoHandler
 
         //GPT
         public async Task<ResponseAllDto<List<AtividadeFilhoDto>>> GetAll(RequestAllAtividadeFilhoDto request) {
-            var consultaBase = _uow.AtividadeFilhoRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
+            var consultaBase = _uow.AtividadeFilhoRepository.Find(x => !x.IsDeleted && x.IdAtividadePai == request.IdAtividadePai).AsQueryable();
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);

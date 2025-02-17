@@ -70,8 +70,8 @@ namespace Application.AtividadePaiHandler {
         }
 
         public async Task<ResponseAllDto<List<AtividadePaiDto>>> GetAll(RequestAllAtividadePaiDto request) {
-            var consultaBase = _uow.AtividadePaiRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
+            var consultaBase = _uow.AtividadePaiRepository.Find(x => !x.IsDeleted && x.IdProjeto == request.IdProjeto).AsQueryable();
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);

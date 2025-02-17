@@ -74,10 +74,10 @@ namespace Application.AtividadeHandler {
 
         // Método para obter uma lista paginada de atividades
         public async Task<ResponseAllDto<List<AtividadeDto>>> GetAll(RequestAllAtividadeDto request) {
-            var consultaBase = _uow.AtividadeRepository.Find(x => !x.IsDeleted).AsQueryable();
+            var consultaBase = _uow.AtividadeRepository.Find(x => !x.IsDeleted && x.IdAtividadeFilho == request.IdAtividadeFilho).AsQueryable();
 
             // Aplica os filtros dinâmicos
-            consultaBase = consultaBase.ApplyFilters(request);
+            //consultaBase = consultaBase.ApplyFilters(request);
 
             // Ordenação dinâmica
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
