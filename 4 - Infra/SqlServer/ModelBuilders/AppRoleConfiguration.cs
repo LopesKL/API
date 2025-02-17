@@ -35,6 +35,20 @@ namespace API.Infra.SqlServer.ModelBuilders
                     .Id(Roles.ROLE_ADMIN_CREATE.Id)
                     .Raise()
             );
+            builder.HasData(
+              appRoleFactory.DefaultBuilder()
+                  .Name(Roles.ROLE_PROJECTMANAGER_CREATE.Name)
+                  .NormalizedName(Roles.ROLE_PROJECTMANAGER_CREATE.Name.ToUpper())
+                  .Id(Roles.ROLE_PROJECTMANAGER_CREATE.Id)
+                  .Raise()
+          );
+            builder.HasData(
+              appRoleFactory.DefaultBuilder()
+                  .Name(Roles.ROLE_USER_CREATE.Name)
+                  .NormalizedName(Roles.ROLE_USER_CREATE.Name.ToUpper())
+                  .Id(Roles.ROLE_USER_CREATE.Id)
+                  .Raise()
+          );
         }
 
         private static void Ignores(EntityTypeBuilder<AppRole> builder)

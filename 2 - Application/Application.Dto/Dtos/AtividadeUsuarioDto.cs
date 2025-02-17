@@ -1,6 +1,7 @@
 ﻿using API.Application.Dto.Request;
 using Azure.Storage.Blobs.Models;
 using System;
+using System.Collections.Generic;
 
 namespace API.Application.Dto
 {
@@ -14,6 +15,9 @@ namespace API.Application.Dto
         public Guid CreatedBy { get; set; }
         public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
+        public List<AtividadeDto> Atrasadas { get; set; }
+        public List<AtividadeDto> EmProgresso { get; set; }
+        public List<AtividadeDto> Futuras { get; set; }
     }
 
     // herda as props do requestAllDto

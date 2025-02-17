@@ -48,13 +48,13 @@ namespace Application.AtividadeUsuarioHandler {
         }
 
         public async Task<AtividadeUsuarioDto> GetById(Guid idUsuario, Guid idAtividade) {
-            var taskUsuario = _uow.AtividadeUsuarioRepository.Find(x => !x.IsDeleted && x.IdUsuario == idUsuario && x.IdUsuario == idAtividade).FirstOrDefault();
+            var taskUsuario = _uow.AtividadeUsuarioRepository.Find(x => !x.IsDeleted && x.IdUsuario == idUsuario && x.IdAtividade == idAtividade).FirstOrDefault();
             return _mapper.Map<AtividadeUsuarioDto>(taskUsuario);
         }
 
         public async Task<AtividadeUsuarioDto> Upsert(AtividadeUsuarioDto atividadeUsuarioDto, UserDto currentUser) {
             try {
-                var taskUsuario = _uow.AtividadeUsuarioRepository.Find(p => p.IdUsuario == atividadeUsuarioDto.IdUsuario && p.IdUsuario == atividadeUsuarioDto.IdUsuario).FirstOrDefault();
+                var taskUsuario = _uow.AtividadeUsuarioRepository.Find(p => p.IdUsuario == atividadeUsuarioDto.IdUsuario && p.IdAtividade == atividadeUsuarioDto.IdAtividade).FirstOrDefault();
                 bool insert = taskUsuario == null;
 
                 if (insert) {
@@ -83,6 +83,78 @@ namespace Application.AtividadeUsuarioHandler {
                 return null;
             }
         }
+
+        //Essa função vamos usar na pagina inicial nos dropdown
+        public async Task<AtividadeUsuarioDto> GetUserActivities(UserDto currentUser)
+        {
+            var today = DateTime.UtcNow;
+            var nextWeek = today.AddDays(7);
+
+
+            // Buscar todas as atividades do usuário e carregar a hierarquia completa
+            var atividades = await _uow.AtividadeUsuarioRepository
+                .Find(x => !x.IsDeleted && x.IdUsuario.ToString() == currentUser.Id)
+                .Select(x => new
+                {
+                    ProjetoNome = x.Atividade.AtividadeFilho.AtividadePai.Projetos.Nome,
+                    AtividadePaiNome = x.Atividade.AtividadeFilho.AtividadePai.Nome,
+                    AtividadeFilhoNome = x.Atividade.AtividadeFilho.Nome,
+                    AtividadeNome = x.Atividade.Nome,
+                    x.Atividade.DataInicio,
+                    x.Atividade.DataFim,
+                    x.Atividade.Progresso
+                })
+                .ToListAsync();
+
+            // Função para formatar a hierarquia corretamente
+            string FormatarHierarquia(string projeto, string atividadePai, string atividadeFilho, string atividade)
+            {
+                return $"{projeto} → {atividadePai} → {atividadeFilho} → {atividade}";
+            }
+
+            // Separar as atividades conforme as datas
+            var atividadesAtrasadas = atividades
+                .Where(x => x.DataFim < today)
+                .Select(x => new AtividadeDto
+                {
+                    NomeFormatado = FormatarHierarquia(x.ProjetoNome, x.AtividadePaiNome, x.AtividadeFilhoNome, x.AtividadeNome),
+                    PorcentagemConclusao = x.Progresso,
+                    TempoRestante = (x.DataFim - today).TotalHours
+                })
+                .ToList();
+
+            var atividadesEmProgresso = atividades
+                .Where(x => x.DataInicio <= today && x.DataFim >= today && x.Progresso > 0)
+                .Select(x => new AtividadeDto
+                {
+                    NomeFormatado = FormatarHierarquia(x.ProjetoNome, x.AtividadePaiNome, x.AtividadeFilhoNome, x.AtividadeNome),
+                    PorcentagemConclusao = x.Progresso,
+                    TempoRestante = (x.DataFim - today).TotalHours
+                })
+                .ToList();
+
+            var atividadesFuturas = atividades
+                .Where(x => x.DataInicio > today && x.DataInicio <= nextWeek)
+                .Select(x => new AtividadeDto
+                {
+                    NomeFormatado = FormatarHierarquia(x.ProjetoNome, x.AtividadePaiNome, x.AtividadeFilhoNome, x.AtividadeNome),
+                    PorcentagemConclusao = x.Progresso,
+                    TempoRestante = (x.DataFim - today).TotalHours
+                })
+                .ToList();
+
+            // Criar e retornar o objeto diretamente
+            return new AtividadeUsuarioDto
+            {
+                Atrasadas = atividadesAtrasadas,
+                EmProgresso = atividadesEmProgresso,
+                Futuras = atividadesFuturas
+            };
+        }
+
+
+
+
 
         //public async Task<bool> Delete(Guid idUsuario, Guid idAtividade) {
         //    var taskUsuario = _uow.AtividadeUsuarioRepository

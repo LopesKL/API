@@ -196,6 +196,8 @@ namespace API.Application.Users {
                 var rolesId = user.Roles.Select(s => s.Id).ToList();
                 var lstRoles = await _uow.AppRoleRepository.Find(f => rolesId.Contains(f.Id)).ToListAsync();
 
+                
+
                 if (actualRoles != null && actualRoles.Count > 0)
                     await _userManager.RemoveFromRolesAsync(existingUser, actualRoles);
 

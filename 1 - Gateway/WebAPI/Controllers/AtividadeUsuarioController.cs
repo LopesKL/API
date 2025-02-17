@@ -19,6 +19,10 @@ namespace API.WebApi.Controllers {
         //[HttpGet("/atividadeFilhoUsuario/getById/{id}")]
         //public Task<ActionResult> GetById(Guid id) => Get(id, handler.GetById);
 
+        [HttpGet("/atividadeUsuario/getInicio")]
+        public Task<ActionResult> GetInicio() => Get(CurrentUser, handler.GetUserActivities);
+
+
         [HttpPost("/atividadeUsuario/upsert")]
         public Task<ActionResult> Upsert(AtividadeUsuarioDto crud) => Post(crud, r => handler.Upsert(r, CurrentUser));
 

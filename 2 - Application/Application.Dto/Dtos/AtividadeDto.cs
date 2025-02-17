@@ -28,6 +28,10 @@ namespace API.Application.Dto {
         public Guid CreatedBy { get; set; }
         public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
+
+        public string NomeFormatado { get; set; } // Exemplo: "Projeto X ? Tarefa Y ? Subtarefa Z ? Atividade W"
+        public double TempoRestante { get; set; } // Horas restantes para conclusão
+        public int PorcentagemConclusao { get; set; } // Progresso da atividade (%)
     }
 
     // herda as props do requestAllDto

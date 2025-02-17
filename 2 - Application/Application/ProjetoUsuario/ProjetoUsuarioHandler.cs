@@ -52,6 +52,10 @@ namespace Application.ProjetoUsuarioHandler {
             return _mapper.Map<ProjetoUsuarioDto>(projetoUsuario);
         }
 
+        
+
+       
+
         public async Task<ProjetoUsuarioDto> Upsert(ProjetoUsuarioDto projetoUsuarioDto, UserDto currentUser) {
             try {
                 var projetoUsuario = _uow.ProjetoUsuarioRepository.Find(p => p.IdUsuario == projetoUsuarioDto.IdUsuario && p.IdProjeto == projetoUsuarioDto.IdProjeto).FirstOrDefault();
