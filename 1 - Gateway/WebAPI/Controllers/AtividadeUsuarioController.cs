@@ -32,6 +32,11 @@ namespace API.WebApi.Controllers {
 
             return Ok(result);
         }
+        [HttpPost("/atividadeUsuario/updateProgresso")]
+        public async Task<ActionResult> UpdateProgresso([FromBody] UpdateProgressoDto request)
+        {
+            return await Post(request,r => handler.UpdateProgresso(r, CurrentUser));
+        }
 
 
 

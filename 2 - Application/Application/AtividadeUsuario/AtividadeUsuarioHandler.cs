@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using INotification = API.Domain.Notifications.INotificationHandler;
 
 namespace Application.AtividadeUsuarioHandler {
@@ -305,6 +306,7 @@ namespace Application.AtividadeUsuarioHandler {
                             timeSheetData.Add(new TimeSheetDto
                             {
                                 Key = Guid.NewGuid().ToString(),
+                                IdAtividade = atividade.IdAtividade,
                                 Projeto = projeto.Nome,
                                 TarefaPai = atividadePai.Nome,
                                 TarefaFilha = atividadeFilho.Nome,
@@ -323,6 +325,28 @@ namespace Application.AtividadeUsuarioHandler {
         }
 
 
+        public async Task<AtividadeDto> UpdateProgresso(UpdateProgressoDto request, UserDto currentUser)
+        {
+            var atividade =  _uow.AtividadeRepository.Find( x => !x.IsDeleted && x.IdAtividade == request.IdAtividade).FirstOrDefault();
+
+            if (atividade == null)
+            {
+                _notification.DefaultBuilder()
+                     .Code("UpdateProgresso")
+                     .Message("Id Atividade está nulo")
+                     .RaiseNotification();
+
+                return null;
+            }
+
+            atividade.Progresso = request.Progresso;
+            atividade.Updated = DateTimeOffset.UtcNow; // Atualiza o timestamp de modificação
+            atividade.UpdatedBy = new Guid(currentUser.Id);
+            _uow.AtividadeRepository.Update(atividade);
+            await _uow.Save();
+
+            return _mapper.Map<AtividadeDto>(atividade);
+        }
 
 
         //public async Task<bool> Delete(Guid idUsuario, Guid idAtividade) {

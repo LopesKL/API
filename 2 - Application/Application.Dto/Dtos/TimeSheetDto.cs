@@ -16,6 +16,8 @@ namespace API.Application.Dto
         public string Tarefa { get; set; }
         public int Progresso { get; set; }
         public string Cor { get; set; }
+
+        public Guid IdAtividade { get; set; }
         public Dictionary<string, int> Horas { get; set; }
     }
 
