@@ -4,6 +4,7 @@ using API.Infra.SqlServer.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace WebAPI.Migrations
 {
     [DbContext(typeof(ApiServerContext))]
-    partial class ApiServerContextModelSnapshot : ModelSnapshot
+    [Migration("20250218135231_new_column_estrela_atividadeusuario")]
+    partial class new_column_estrela_atividadeusuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -151,7 +154,13 @@ namespace WebAPI.Migrations
                     b.Property<string>("Files")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("HorasCobradas")
+                        .HasColumnType("int");
+
                     b.Property<int>("HorasEstimadas")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HorasNaoCobradas")
                         .HasColumnType("int");
 
                     b.Property<Guid>("IdAtividadePai")
@@ -162,6 +171,9 @@ namespace WebAPI.Migrations
 
                     b.Property<string>("Nome")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Progresso")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("Updated")
                         .HasColumnType("datetimeoffset");
@@ -257,7 +269,7 @@ namespace WebAPI.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool?>("estrela")
+                    b.Property<bool>("estrela")
                         .HasColumnType("bit");
 
                     b.HasKey("IdUsuario", "IdAtividade");

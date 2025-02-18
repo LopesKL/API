@@ -7,6 +7,7 @@ using Application.AtividadeUsuarioHandler;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using INotification = API.Domain.Notifications.INotificationHandler;
 
@@ -20,7 +21,18 @@ namespace API.WebApi.Controllers {
         //public Task<ActionResult> GetById(Guid id) => Get(id, handler.GetById);
 
         [HttpGet("/atividadeUsuario/getInicio")]
-        public Task<ActionResult> GetInicio() => Get(CurrentUser, handler.GetUserActivities);
+        public Task<ActionResult> GetInicio() => Get(CurrentUser, handler.GetUserActivitiesTeste);
+
+
+        [HttpGet("/atividadeUsuario/getTimeSheet")]
+        public async Task<ActionResult> GetTimeSheet(DateTime startDate, DateTime endDate)
+        {
+            var currentUser = CurrentUser; // Assumindo que você tem um método para obter o usuário atual.
+            var result = await handler.GetUserTimeSheet(currentUser, startDate, endDate);
+
+            return Ok(result);
+        }
+
 
 
         [HttpPost("/atividadeUsuario/upsert")]

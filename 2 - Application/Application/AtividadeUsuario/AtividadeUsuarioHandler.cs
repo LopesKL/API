@@ -4,6 +4,7 @@ using API.Application.Dto.Request;
 using API.Application.Dto.ResponsePatterns;
 using API.Domain.Interfaces.Write;
 using API.Domain.Projeto;
+//using Application.Dto.Dtos;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -92,19 +93,33 @@ namespace Application.AtividadeUsuarioHandler {
 
 
             // Buscar todas as atividades do usuário e carregar a hierarquia completa
+            //var atividades = await _uow.AtividadeUsuarioRepository
+            //    .Find(x => !x.IsDeleted && x.IdUsuario.ToString() == currentUser.Id)
+            //    .Select(x => new
+            //    {
+            //        ProjetoNome = x.Atividade.AtividadeFilho.AtividadePai.Projetos.Nome,
+            //        AtividadePaiNome = x.Atividade.AtividadeFilho.AtividadePai.Nome,
+            //        AtividadeFilhoNome = x.Atividade.AtividadeFilho.Nome,
+            //        AtividadeNome = x.Atividade.Nome,
+            //        x.Atividade.DataInicio,
+            //        x.Atividade.DataFim,
+            //        x.Atividade.Progresso
+            //    })
+            //    .ToListAsync();
+
             var atividades = await _uow.AtividadeUsuarioRepository
-                .Find(x => !x.IsDeleted && x.IdUsuario.ToString() == currentUser.Id)
-                .Select(x => new
-                {
-                    ProjetoNome = x.Atividade.AtividadeFilho.AtividadePai.Projetos.Nome,
-                    AtividadePaiNome = x.Atividade.AtividadeFilho.AtividadePai.Nome,
-                    AtividadeFilhoNome = x.Atividade.AtividadeFilho.Nome,
-                    AtividadeNome = x.Atividade.Nome,
-                    x.Atividade.DataInicio,
-                    x.Atividade.DataFim,
-                    x.Atividade.Progresso
-                })
-                .ToListAsync();
+               .Find(x => !x.IsDeleted )
+               .Select(x => new
+               {
+                   ProjetoNome = x.Atividade.AtividadeFilho.AtividadePai.Projetos.Nome,
+                   AtividadePaiNome = x.Atividade.AtividadeFilho.AtividadePai.Nome,
+                   AtividadeFilhoNome = x.Atividade.AtividadeFilho.Nome,
+                   AtividadeNome = x.Atividade.Nome,
+                   x.Atividade.DataInicio,
+                   x.Atividade.DataFim,
+                   x.Atividade.Progresso
+               })
+               .ToListAsync();
 
             // Função para formatar a hierarquia corretamente
             string FormatarHierarquia(string projeto, string atividadePai, string atividadeFilho, string atividade)
@@ -124,7 +139,7 @@ namespace Application.AtividadeUsuarioHandler {
                 .ToList();
 
             var atividadesEmProgresso = atividades
-                .Where(x => x.DataInicio <= today && x.DataFim >= today && x.Progresso > 0)
+                .Where(x => x.DataInicio <= today && x.DataFim >= today)
                 .Select(x => new AtividadeDto
                 {
                     NomeFormatado = FormatarHierarquia(x.ProjetoNome, x.AtividadePaiNome, x.AtividadeFilhoNome, x.AtividadeNome),
@@ -152,6 +167,160 @@ namespace Application.AtividadeUsuarioHandler {
             };
         }
 
+        public async Task<AtividadeUsuarioDto> GetUserActivitiesTeste(UserDto currentUser)
+        {
+            var today = DateTime.UtcNow;
+            var nextWeek = today.AddDays(7);
+
+            // Buscar todos os projetos do usuário
+            var projetos = await _uow.ProjetosRepository
+                .Find(p => !p.IsDeleted)
+                .Select(p => new
+                {
+                    ProjetoNome = p.Nome,
+                    Atividades = p.AtividadePai.SelectMany(ap => ap.AtividadeFilho)
+                        .SelectMany(af => af.Atividades)
+                        .Select(a => new
+                        {
+                            AtividadePaiNome = a.AtividadeFilho.AtividadePai.Nome,
+                            AtividadeFilhoNome = a.AtividadeFilho.Nome,
+                            AtividadeNome = a.Nome,
+                            a.DataInicio,
+                            a.DataFim,
+                            a.Progresso
+
+                        })
+                })
+                .ToListAsync();
+
+            // Função para formatar a hierarquia corretamente
+            string FormatarHierarquia(string projeto, string atividadePai, string atividadeFilho, string atividade)
+            {
+                return $"{projeto} → {atividadePai} → {atividadeFilho} → {atividade}";
+            }
+
+            var atividadesAtrasadas = new List<AtividadeDto>();
+            var atividadesEmProgresso = new List<AtividadeDto>();
+            var atividadesFuturas = new List<AtividadeDto>();
+
+            // Percorre os projetos e atividades
+            foreach (var projeto in projetos)
+            {
+                foreach (var atividade in projeto.Atividades)
+                {
+                    var atividadeDto = new AtividadeDto
+                    {
+                        NomeFormatado = FormatarHierarquia(projeto.ProjetoNome, atividade.AtividadePaiNome, atividade.AtividadeFilhoNome, atividade.AtividadeNome),
+                        PorcentagemConclusao = atividade.Progresso,
+                        TempoRestante = (atividade.DataFim - today).TotalHours
+                    };
+
+                    if (atividade.DataFim < today)
+                        atividadesAtrasadas.Add(atividadeDto);
+                    else if (atividade.DataInicio <= today && atividade.DataFim >= today)
+                        atividadesEmProgresso.Add(atividadeDto);
+                    else if (atividade.DataInicio > today && atividade.DataInicio <= nextWeek)
+                        atividadesFuturas.Add(atividadeDto);
+                }
+            }
+
+            return new AtividadeUsuarioDto
+            {
+                Atrasadas = atividadesAtrasadas,
+                EmProgresso = atividadesEmProgresso,
+                Futuras = atividadesFuturas
+            };
+        }
+
+        public async Task<List<TimeSheetDto>> GetUserTimeSheet(UserDto currentUser, DateTime startDate, DateTime endDate)
+        {
+            var lancamentos = await _uow.LancamentoRepository
+                .Find(l => !l.IsDeleted )
+                .Select(l => new
+                {
+                    l.IdProjeto,
+                    l.IdAtividadePai,
+                    l.IdAtividadeFilho,
+                    l.Descricao,
+                    l.Data,
+                    l.Horas
+                })
+                .ToListAsync();
+
+            var projetos = await _uow.ProjetosRepository
+                .Find(p => !p.IsDeleted)
+                .Select(p => new
+                {
+                    p.IdProjetos,
+                    p.Nome,
+                    p.Cor,
+                    AtividadesPai = p.AtividadePai.Select(ap => new
+                    {
+                        ap.IdAtividadePai,
+                        ap.Nome,
+                        AtividadesFilho = ap.AtividadeFilho.Select(af => new
+                        {
+                            af.IdAtividadeFilho,
+                            af.Nome,
+                            Atividades = af.Atividades
+                        .Where(a => a.DataInicio.Date <= endDate.Date && a.DataFim.Date >= startDate.Date) // Filtro pelo período
+                        .Select(a => new
+                        {
+                            a.IdAtividade,
+                            a.Nome,
+                            a.Progresso
+                        })
+                        })
+                    })
+                })
+                .ToListAsync();
+
+            var timeSheetData = new List<TimeSheetDto>();
+
+            foreach (var projeto in projetos)
+            {
+                foreach (var atividadePai in projeto.AtividadesPai)
+                {
+                    foreach (var atividadeFilho in atividadePai.AtividadesFilho)
+                    {
+                        foreach (var atividade in atividadeFilho.Atividades)
+                        {
+                            var horasPorDia = new Dictionary<string, int>();
+                            
+                            
+                            foreach (var dia in Enumerable.Range(0, 7))
+                            {
+                                var data = startDate.AddDays(dia);
+                                var totalHoras = lancamentos
+                                    .Where(l => l.IdProjeto == projeto.IdProjetos &&
+                                                l.IdAtividadePai == atividadePai.IdAtividadePai &&
+                                                l.IdAtividadeFilho == atividadeFilho.IdAtividadeFilho &&
+                                                l.Descricao == atividade.Nome &&
+                                                l.Data.Date == data.Date)
+                                    .Sum(l => l.Horas);
+
+                                horasPorDia[data.ToString("ddd").ToLower()] = totalHoras;
+                            }
+
+                            timeSheetData.Add(new TimeSheetDto
+                            {
+                                Key = Guid.NewGuid().ToString(),
+                                Projeto = projeto.Nome,
+                                TarefaPai = atividadePai.Nome,
+                                TarefaFilha = atividadeFilho.Nome,
+                                Tarefa = atividade.Nome,
+                                Progresso = atividade.Progresso,
+                                Cor = projeto.Cor,
+                                // Podemos adicionar progresso se disponível
+                                Horas = horasPorDia
+                            });
+                        }
+                    }
+                }
+            }
+
+            return timeSheetData;
+        }
 
 
 

@@ -18,6 +18,8 @@ namespace API.Application.Dto
         public List<AtividadeDto> Atrasadas { get; set; }
         public List<AtividadeDto> EmProgresso { get; set; }
         public List<AtividadeDto> Futuras { get; set; }
+        public bool? estrela { get; set; } = false;
+
     }
 
     // herda as props do requestAllDto

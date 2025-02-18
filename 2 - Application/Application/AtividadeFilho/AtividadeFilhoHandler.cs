@@ -219,10 +219,7 @@ namespace Application.AtividadeFilhoHandler
                 atividadeFilho.Nome = atividadeFilhoDto.Nome;
                 atividadeFilho.DataInicio = atividadeFilhoDto.DataInicio;
                 atividadeFilho.DataFim = atividadeFilhoDto.DataFim;
-                atividadeFilho.Progresso = atividadeFilhoDto.Progresso;
                 atividadeFilho.HorasEstimadas = atividadeFilhoDto.HorasEstimadas;
-                atividadeFilho.HorasCobradas = atividadeFilhoDto.HorasCobradas;
-                atividadeFilho.HorasNaoCobradas = atividadeFilhoDto.HorasNaoCobradas;
                 atividadeFilho.Descricao = atividadeFilhoDto.Descricao;
                 atividadeFilho.Files = atividadeFilhoDto.Files;
 
