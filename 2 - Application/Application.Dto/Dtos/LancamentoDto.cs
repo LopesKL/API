@@ -10,13 +10,17 @@ namespace API.Application.Dto
         public Guid IdProjeto { get; set; }
         public Guid? IdAtividadePai { get; set; }
         public Guid? IdAtividadeFilho { get; set; }
+        public Guid IdAtividade { get; set; }
+
+        public DateTime Dia { get; set; }
+
         public Guid? idTag { get; set; }
         public Guid IdUsuario { get; set; }
         public string Descricao { get; set; }
         public DateTime Data { get; set; }
-        public DateTime HorarioInicio { get; set; }
-        public DateTime HorarioFim { get; set; }
-        public int Horas { get; set; }
+        public DateTime? HorarioInicio { get; set; }
+        public DateTime? HorarioFim { get; set; }
+        public string Horas { get; set; }
         public bool Cobrado { get; set; }
         public int Valor { get; set; }
 

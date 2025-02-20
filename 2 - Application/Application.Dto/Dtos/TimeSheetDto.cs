@@ -18,7 +18,7 @@ namespace API.Application.Dto
         public string Cor { get; set; }
 
         public Guid IdAtividade { get; set; }
-        public Dictionary<string, int> Horas { get; set; }
+        public Dictionary<string, decimal> Horas { get; set; }
     }
 
 }

@@ -21,6 +21,13 @@ namespace API.WebApi.Controllers {
         [HttpGet("/lancamento/getById/{id}")]
         public Task<ActionResult> GetById(Guid id) => Get(id, handler.GetById);
 
+        [HttpGet("/lancamento/getByLancamento/{idAtividade}/{dia}")]
+        public async Task<ActionResult<LancamentoDto>> GetByLancamento(Guid idAtividade, DateTime dia)
+        {
+            var result = await handler.GetByLancamento(idAtividade, dia);
+            return Ok(result);
+        }
+
         // Endpoint para inserir ou atualizar um registro, recebe um objeto CrudDto via POST
         [HttpPost("/lancamento/upsert")]
         public Task<ActionResult> Upsert(LancamentoDto crud) => Post(crud, r => handler.Upsert(r, CurrentUser));

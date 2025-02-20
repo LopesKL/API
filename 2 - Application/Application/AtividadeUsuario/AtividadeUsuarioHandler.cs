@@ -233,8 +233,10 @@ namespace Application.AtividadeUsuarioHandler {
             };
         }
 
+        
         public async Task<List<TimeSheetDto>> GetUserTimeSheet(UserDto currentUser, DateTime startDate, DateTime endDate)
         {
+            // Busca os lançamentos com as informações necessárias, já somando as horas por dia
             var lancamentos = await _uow.LancamentoRepository
                 .Find(l => !l.IsDeleted )
                 .Select(l => new
@@ -242,8 +244,9 @@ namespace Application.AtividadeUsuarioHandler {
                     l.IdProjeto,
                     l.IdAtividadePai,
                     l.IdAtividadeFilho,
+                    l.IdAtividade,
                     l.Descricao,
-                    l.Data,
+                    Data = l.Data.Date,
                     l.Horas
                 })
                 .ToListAsync();
@@ -264,13 +267,13 @@ namespace Application.AtividadeUsuarioHandler {
                             af.IdAtividadeFilho,
                             af.Nome,
                             Atividades = af.Atividades
-                        .Where(a => a.DataInicio.Date <= endDate.Date && a.DataFim.Date >= startDate.Date) // Filtro pelo período
-                        .Select(a => new
-                        {
-                            a.IdAtividade,
-                            a.Nome,
-                            a.Progresso
-                        })
+                                .Where(a => a.DataInicio <= endDate && a.DataFim >= startDate)
+                                .Select(a => new
+                                {
+                                    a.IdAtividade,
+                                    a.Nome,
+                                    a.Progresso
+                                })
                         })
                     })
                 })
@@ -286,22 +289,24 @@ namespace Application.AtividadeUsuarioHandler {
                     {
                         foreach (var atividade in atividadeFilho.Atividades)
                         {
-                            var horasPorDia = new Dictionary<string, int>();
-                            
-                            
-                            foreach (var dia in Enumerable.Range(0, 7))
-                            {
-                                var data = startDate.AddDays(dia);
-                                var totalHoras = lancamentos
-                                    .Where(l => l.IdProjeto == projeto.IdProjetos &&
-                                                l.IdAtividadePai == atividadePai.IdAtividadePai &&
-                                                l.IdAtividadeFilho == atividadeFilho.IdAtividadeFilho &&
-                                                l.Descricao == atividade.Nome &&
-                                                l.Data.Date == data.Date)
-                                    .Sum(l => l.Horas);
+                            var horasPorDia = Enumerable.Range(0, (endDate - startDate).Days + 1)
+                                 .ToDictionary(
+                                dia => startDate.AddDays(dia).ToString("ddd").ToLower(),
+                                dia =>
+                                    {
+                                        var data = startDate.AddDays(dia).Date;
+                                        var totalHoras = lancamentos
+                                            .Where(l =>
+                                                     l.IdProjeto == projeto.IdProjetos &&
+                                                     l.IdAtividadePai == atividadePai.IdAtividadePai &&
+                                                    l.IdAtividadeFilho == atividadeFilho.IdAtividadeFilho &&
+                                                    l.IdAtividade == atividade.IdAtividade &&
+                                                        l.Data == data)
+                                                        .Sum(l => l.Horas);
 
-                                horasPorDia[data.ToString("ddd").ToLower()] = totalHoras;
-                            }
+                                                        return Math.Round(totalHoras, 2, MidpointRounding.AwayFromZero);
+                                    });
+
 
                             timeSheetData.Add(new TimeSheetDto
                             {
@@ -313,7 +318,6 @@ namespace Application.AtividadeUsuarioHandler {
                                 Tarefa = atividade.Nome,
                                 Progresso = atividade.Progresso,
                                 Cor = projeto.Cor,
-                                // Podemos adicionar progresso se disponível
                                 Horas = horasPorDia
                             });
                         }
@@ -323,6 +327,7 @@ namespace Application.AtividadeUsuarioHandler {
 
             return timeSheetData;
         }
+
 
 
         public async Task<AtividadeDto> UpdateProgresso(UpdateProgressoDto request, UserDto currentUser)

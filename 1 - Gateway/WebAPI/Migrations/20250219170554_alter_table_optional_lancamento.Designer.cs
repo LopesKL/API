@@ -4,6 +4,7 @@ using API.Infra.SqlServer.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace WebAPI.Migrations
 {
     [DbContext(typeof(ApiServerContext))]
-    partial class ApiServerContextModelSnapshot : ModelSnapshot
+    [Migration("20250219170554_alter_table_optional_lancamento")]
+    partial class alter_table_optional_lancamento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -444,8 +447,8 @@ namespace WebAPI.Migrations
                     b.Property<DateTime?>("HorarioInicio")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Horas")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("Horas")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("IdAtividade")
                         .HasColumnType("uniqueidentifier");
@@ -471,8 +474,8 @@ namespace WebAPI.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Valor")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("Valor")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("idTag")
                         .HasColumnType("uniqueidentifier");

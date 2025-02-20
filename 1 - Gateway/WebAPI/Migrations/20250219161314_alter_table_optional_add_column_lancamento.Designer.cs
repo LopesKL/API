@@ -4,6 +4,7 @@ using API.Infra.SqlServer.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace WebAPI.Migrations
 {
     [DbContext(typeof(ApiServerContext))]
-    partial class ApiServerContextModelSnapshot : ModelSnapshot
+    [Migration("20250219161314_alter_table_optional_add_column_lancamento")]
+    partial class alter_table_optional_add_column_lancamento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -444,16 +447,16 @@ namespace WebAPI.Migrations
                     b.Property<DateTime?>("HorarioInicio")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Horas")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("Horas")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("IdAtividade")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("IdAtividadeFilho")
+                    b.Property<Guid?>("IdAtividadeFilho")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("IdAtividadePai")
+                    b.Property<Guid?>("IdAtividadePai")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("IdProjeto")
@@ -471,8 +474,8 @@ namespace WebAPI.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Valor")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("Valor")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("idTag")
                         .HasColumnType("uniqueidentifier");
@@ -1024,14 +1027,12 @@ namespace WebAPI.Migrations
                     b.HasOne("API.Domain.Projeto.AtividadeFilho", "AtividadeFilho")
                         .WithMany("Lancamento")
                         .HasForeignKey("IdAtividadeFilho")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("API.Domain.Projeto.AtividadePai", "AtividadePai")
                         .WithMany("Lancamento")
                         .HasForeignKey("IdAtividadePai")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("API.Domain.Projeto.Projetos", "Projetos")
                         .WithMany("Lancamento")
