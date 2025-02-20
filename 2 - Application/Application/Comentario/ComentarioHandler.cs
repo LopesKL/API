@@ -71,13 +71,35 @@ namespace Application.ComentarioHandler {
 
         public async Task<ResponseAllDto<List<ComentarioDto>>> GetAll(RequestAllComentarioDto request) {
             var consultaBase = _uow.ComentarioRepository.Find(x => !x.IsDeleted).AsQueryable();
-            consultaBase = consultaBase.ApplyFilters(request);
 
-            if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
+            // Aplicação dos filtros considerando que os IDs são Guid
+            if (request.IdAtividade != null) {
+                // Filtro pelo idAtividade (nível mais específico)
+                consultaBase = consultaBase.Where(x => x.IdAtividade == request.IdAtividade);
+            }
+            else if (request.IdAtividadeFilho != null) {
+                // Se idAtividade não estiver preenchido, utiliza idAtividadeFilho
+                consultaBase = consultaBase.Where(x => x.IdAtividadeFilho == request.IdAtividadeFilho);
+            }
+            else if (request.IdAtividadePai != null) {
+                // Caso os anteriores não estejam preenchidos, aplica o filtro de idAtividadePai
+                consultaBase = consultaBase.Where(x => x.IdAtividadePai == request.IdAtividadePai);
+            }
+            else if (request.IdProjetos != null) {
+                // Por último, filtra pelo idProjetos
+                consultaBase = consultaBase.Where(x => x.IdProjetos == request.IdProjetos);
+            }
+
+            // Ordenação
+            if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField)) {
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
-            else
-                consultaBase = consultaBase.OrderByDescending(x => x.Updated).ThenByDescending(x => x.Created);
+            }
+            else {
+                consultaBase = consultaBase.OrderByDescending(x => x.Updated)
+                                           .ThenByDescending(x => x.Created);
+            }
 
+            // Paginação e mapeamento para DTO
             var totalItens = await consultaBase.CountAsync();
             var itensPaginados = await consultaBase
                 .Skip((request.Page - 1) * request.PageSize)
@@ -113,7 +135,7 @@ namespace Application.ComentarioHandler {
 
                 if (insert) {
                     comentario.Created = DateTime.UtcNow;
-                    comentario.CreatedBy = new Guid(currentUser.Id);
+                    //comentario.CreatedBy = new Guid(currentUser.Id);
                     comentario.IsDeleted = false;
                     _uow.ComentarioRepository.Insert(comentario);
                 }
