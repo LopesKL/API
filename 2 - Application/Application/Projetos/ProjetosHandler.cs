@@ -112,12 +112,23 @@ namespace Application.PropjetosHandler {
         public async Task<ResponseAllDto<List<ProjetosDto>>> GetAll(RequestAllProjetosDto request) {
             var consultaBase = _uow.ProjetosRepository.Find(x => !x.IsDeleted).AsQueryable();
 
-            //consultaBase = consultaBase.ApplyFilters(request);
+            // Aplica o filtro por Nome
+            if (!string.IsNullOrEmpty(request.Nome)) {
+                consultaBase = consultaBase.Where(x => x.Nome.Contains(request.Nome));
+            }
 
-            if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
+            // Aplica o filtro por idCliente
+            if (request.IdCliente != Guid.Empty) {
+                consultaBase = consultaBase.Where(x => x.IdCliente == request.IdCliente);
+            }
+
+            // Aplicação da ordenação
+            if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField)) {
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
-            else
+            }
+            else {
                 consultaBase = consultaBase.OrderByDescending(x => x.Updated).ThenByDescending(x => x.Created);
+            }
 
             var totalItens = await consultaBase.CountAsync();
             var itensPaginados = await consultaBase
@@ -128,7 +139,6 @@ namespace Application.PropjetosHandler {
 
             return new ResponseAllDto<List<ProjetosDto>>(itensPaginados, totalItens, itensPaginados.Count);
         }
-
 
         // Método para obter um item especifico de registros CRUD
         public async Task<ProjetosDto> GetById(Guid idProjetos) {

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using INotification = API.Domain.Notifications.INotificationHandler;
 
@@ -47,20 +48,33 @@ namespace Application.AtividadeHandler {
         }
 
         // Método para buscar um arquivo no Azure Blob Storage
+
         public async Task<(Stream, string)> GetFile(string key) {
-            try {
-                // Instancia um objeto de BlobStorage e busca o arquivo pelo identificador (key)
-                var blobStorage = new BlobStorage(_configuration);
-                var (fileStream, contentType) = await blobStorage.GetFile(key);
+                try {
+                    // Verifica se a chave está no formato de array JSON e extrai o primeiro item
+                    if (key.StartsWith("[") && key.EndsWith("]")) {
+                        try {
+                            var fileNames = JsonSerializer.Deserialize<List<string>>(key);
+                            key = fileNames?.FirstOrDefault() ?? key; // Pega o primeiro nome ou mantém o original
+                        }
+                        catch (JsonException) {
+                            // Em caso de erro na conversão, mantém o valor original
+                        }
+                    }
 
-                return (fileStream, contentType); // Retorna o stream do arquivo e o tipo de conteúdo
-            }
-            catch {
-                return (null, null); // Se ocorrer um erro, retorna null
-            }
-        }
+                    // Instancia um objeto de BlobStorage e busca o arquivo pelo identificador (key)
+                    var blobStorage = new BlobStorage(_configuration);
+                    var (fileStream, contentType) = await blobStorage.GetFile(key);
 
-        public async Task<bool> RemoveFile(string filename) {
+                    return (fileStream, contentType); // Retorna o stream do arquivo e o tipo de conteúdo
+                }
+                catch {
+                    return (null, null); // Se ocorrer um erro, retorna null
+                }
+            }
+
+
+    public async Task<bool> RemoveFile(string filename) {
             try {
                 // Instancia um objeto de BlobStorage e busca o arquivo pelo identificador (key)
                 var blobStorage = new BlobStorage(_configuration);
@@ -96,6 +110,7 @@ namespace Application.AtividadeHandler {
                     Nome = x.Nome,
                     DataInicio = x.DataInicio,
                     DataFim = x.DataFim,
+                    Descricao = x.Descricao,
                     Status = x.Status,
                     Progresso = x.Progresso,
                     HorasEstimadas = x.HorasEstimadas,
@@ -105,7 +120,8 @@ namespace Application.AtividadeHandler {
                     Updated = x.Updated,
                     CreatedBy = x.CreatedBy,
                     UpdatedBy = x.UpdatedBy,
-                    IsDeleted = x.IsDeleted
+                    IsDeleted = x.IsDeleted,
+                    Files = x.Files,
                 })
                 .ToListAsync();
 
@@ -145,6 +161,8 @@ namespace Application.AtividadeHandler {
                 atividade.HorasEstimadas = atividadeDto.HorasEstimadas;
                 atividade.HorasTotais = atividadeDto.HorasTotais;
                 atividade.Cobrado = atividadeDto.Cobrado;
+                atividade.Descricao = atividadeDto.Descricao;
+                atividade.Files = atividadeDto.Files;
 
                 if (insert) {
                     atividade.Created = DateTimeOffset.UtcNow;

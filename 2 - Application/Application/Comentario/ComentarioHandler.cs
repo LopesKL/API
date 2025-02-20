@@ -124,7 +124,7 @@ namespace Application.ComentarioHandler {
                     comentario = new Comentario { IdComentario = Guid.NewGuid() };
                 }
 
-                comentario.IdUsuario = comentarioDto.IdUsuario;
+                comentario.IdUsuario = Guid.Parse(currentUser.Id);
                 comentario.IdProjetos = comentarioDto.IdProjetos;
                 comentario.IdAtividadePai = comentarioDto.IdAtividadePai;
                 comentario.IdAtividadeFilho = comentarioDto.IdAtividadeFilho;
@@ -135,7 +135,7 @@ namespace Application.ComentarioHandler {
 
                 if (insert) {
                     comentario.Created = DateTime.UtcNow;
-                    //comentario.CreatedBy = new Guid(currentUser.Id);
+                    comentario.CreatedBy = new Guid(currentUser.Id);
                     comentario.IsDeleted = false;
                     _uow.ComentarioRepository.Insert(comentario);
                 }
