@@ -39,6 +39,7 @@ namespace API.Application.Dto
         public string PhoneNumber { get; set; }
         public bool Active { get; set; }
         public int TaxaFaturamento { get; set; }
+       
         public string Empresa { get; set; }
         public List<RoleDto> Roles { get; set; }
         public DateTime Created { get; set; }

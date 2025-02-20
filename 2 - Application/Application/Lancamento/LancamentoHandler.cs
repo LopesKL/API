@@ -139,7 +139,14 @@ namespace Application.LancamentoHandler {
                 lancamento.IdAtividade = atividade.IdAtividade;
                 lancamento.idTag = lancamentoDto.idTag;
                 lancamento.IdUsuario = new Guid(currentUser.Id);
-                lancamento.Descricao = lancamentoDto.Descricao;
+                if (lancamentoDto.Horas == "0")
+                {
+                    lancamento.Descricao = "";
+                }
+                else
+                {
+                    lancamento.Descricao = lancamentoDto.Descricao;
+                }
                 lancamento.HorarioInicio = lancamentoDto.HorarioInicio;
                 lancamento.HorarioFim = lancamentoDto.HorarioFim;
                 lancamento.Cobrado = true;

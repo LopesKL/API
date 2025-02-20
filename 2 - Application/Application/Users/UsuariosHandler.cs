@@ -48,16 +48,15 @@ namespace API.Application.Users {
 
 
         // Método para buscar todos os usuários
-        public async Task<ResponseAllDto<List<UserDto>>> GetAll(RequestAllUserDto request, UserDto currentUser) {
+        public async Task<ResponseAllDto<List<UserDto>>> GetAll(RequestAllUserDto request, UserDto currentUser)
+        {
+            // Cria a consulta base para buscar usuários ativos
+            var consultaBase = _uow.AppUserRepository.Find(w => w.Active == true);
 
-            // Cria uma consulta base para buscar registros que não estão deletados
-            var consultaBase = _userManager.Users.Where(w => w.Active
-            );
-
-            // Aplica os filtros dinamicamente usando Expressões Lambda
+            // Aplica os filtros dinamicamente
             consultaBase = consultaBase.ApplyFilters(request);
 
-            // Aplica a ordenação dinâmica conforme os parâmetros fornecidos
+            // Aplica a ordenação conforme os parâmetros fornecidos
             if (!string.IsNullOrEmpty(request.SortOrder) && !string.IsNullOrEmpty(request.SorterField))
                 consultaBase = consultaBase.ApplySorting(request.SorterField, request.SortOrder);
             else
@@ -66,26 +65,56 @@ namespace API.Application.Users {
             // Conta o total de itens disponíveis na consulta
             var totalItens = await consultaBase.CountAsync();
 
-            // Calcula o número de itens a serem ignorados para a paginação
-            var skip = (request.Page - 1) * request.PageSize;
-            if (skip < 0) skip = 0;
-            // Realiza a paginação conforme os parâmetros fornecidos
-            var itensPaginados = await consultaBase
-                .Skip(skip)
+            // Obtém a lista de usuários paginada
+            var appUsers = await consultaBase
+                .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new UserDto {
-                    Id = new (x.Id),
-                    UserName = x.UserName,
-                    Email = x.Email,
-                    PhoneNumber = x.PhoneNumber,
-                })
-                 .AsNoTracking().ToListAsync();
+                .AsNoTracking()
+                .ToListAsync();
 
+            // Mapeia os usuários e obtém suas roles
+            var itensPaginados = new List<UserDto>();
 
-            // Retorna uma resposta com os itens paginados e o total de itens
+            foreach (var appUser in appUsers)
+            {
+                var roles = await _userManager.GetRolesAsync(appUser);
+                var rolesList = new List<RoleDto>();
+
+                foreach (var roleName in roles)
+                {
+                    var role = await _roleManager.FindByNameAsync(roleName);
+                    if (role != null)
+                        rolesList.Add(new RoleDto { Id = role.Id, Name = role.Name });
+                }
+
+                itensPaginados.Add(new UserDto
+                {
+                    Id = appUser.Id,
+                    UserName = appUser.UserName,
+                    TaxaFaturamento = appUser.TaxaFaturamento,
+                    Email = appUser.Email,
+                    Roles = rolesList
+                });
+            }
+
+            // Retorna os itens paginados com o total de registros
             return new ResponseAllDto<List<UserDto>>(itensPaginados, totalItens, itensPaginados.Count);
-
         }
+
+        public async Task<List<RoleDto>> GetRoles()
+        {
+            var roles = await _roleManager.Roles
+                .Select(role => new RoleDto
+                {
+                    Id = role.Id,
+                    Name = role.Name
+                })
+                .ToListAsync();
+
+            return roles;
+        }
+
+
 
         public async Task<ResponseAllDto<List<UserDto>>> GetAllMotorista(RequestAllUserDto request) {
 
@@ -158,6 +187,7 @@ namespace API.Application.Users {
 
             return result;
         }
+
         // Método para buscar um usuário por ID
         public async Task<UserDto> GetById(string id) {
             // Cria uma consulta base para buscar registros que não estão deletados
@@ -282,9 +312,6 @@ namespace API.Application.Users {
         }
 
 
-        private async Task AssignRoles(AppUser userRequest) {
-                await _userManager.AddToRoleAsync(userRequest, Roles.ROLE_ADMIN);
-        }
 
         // Método para deletar um usuário
         public async Task<bool> Delete(Guid id, UserDto currentUser) {

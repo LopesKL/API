@@ -19,5 +19,7 @@ namespace API.WebApi.Controllers
         //[Authorize(Roles = Roles.ROLE_ADMIN)]
         [HttpPost("/seed")]
         public Task<ActionResult> Seed() => Post<object, bool>(null, _ => handler.SeedAdmin());
+
+
     }
 }
